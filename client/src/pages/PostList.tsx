@@ -3,9 +3,12 @@ import { api } from "../api";
 import { formatDate } from "../format";
 import type { Post } from "../types";
 import type { Go } from "../App";
+import { Fragment } from "react";
 
 function highlight(text: string, keyword: string): string {
+  if (!keyword) return text;
   return text.split(keyword).join(`<mark>${keyword}</mark>`);
+  
 }
 
 export default function PostList({go}: {go: Go}) {
@@ -14,7 +17,7 @@ export default function PostList({go}: {go: Go}) {
   const [searched, setSearched] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
   const [error, setError] = useState("");
-
+  
   async function load(keyword: string) {
     try {
       setPosts(await api<Post[]>(`/api/posts?q=${encodeURIComponent(keyword)}`));
@@ -38,7 +41,7 @@ export default function PostList({go}: {go: Go}) {
           <button className="primary">검색</button>
         </form>
       </div>
-
+      
       {searched && <p className="muted">'{searched}' 검색 결과 {posts.length}건</p>}
       {error && <p className="error">{error}</p>}
 

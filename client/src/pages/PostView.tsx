@@ -3,6 +3,7 @@ import { api, downloadUrl } from "../api";
 import { formatDate, formatSize } from "../format";
 import type { Comment, PostDetail, User } from "../types";
 import type { Go } from "../App";
+import DOMPurify from "dompurify";
 
 export default function PostView({id, me, go}: {id: number; me: User | null; go: Go}) {
   const [post, setPost] = useState<PostDetail | null>(null);
@@ -44,14 +45,22 @@ export default function PostView({id, me, go}: {id: number; me: User | null; go:
   if (!post) return <section className="card"><p className="muted">불러오는 중…</p></section>;
 
   const canEdit = me !== null && (me.id === post.user_id || me.role === "ADMIN");
-
+  
+  const cleanContent = DOMPurify.sanitize(
+    post.content,
+    {
+      ALLOWED_TAGS: ["b", "i", "u", "br"],
+      ALLOWED_ATTR: []
+    }
+  );
+  
   return (
     <article className="card">
       <button className="back" onClick={() => go({name: "list"})}>← 목록으로</button>
       <h1>{post.title}</h1>
       <p className="meta">{post.authorName} · {formatDate(post.created_at)}</p>
 
-      <div className="content" dangerouslySetInnerHTML={{__html: post.content}} />
+      <div className="content" dangerouslySetInnerHTML={{__html: cleanContent}}/>
 
       {post.attachments.length > 0 && (
         <div className="files">
