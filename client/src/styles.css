@@ -1,0 +1,119 @@
+/* 색은 모두 아래 변수로 관리합니다. 디자인을 바꾸고 싶으면 이 값부터 바꾸세요. */
+:root {
+  --bg: #F4F6F9;
+  --card: #FFFFFF;
+  --ink: #1C2331;
+  --muted: #5E6878;
+  --line: #DEE3EA;
+  --accent: #2F4BB5;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E8ECFA;
+  --danger: #C23A2E;
+  --mark: #FFE58A;
+  --font: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161E; --card: #1A1F2A; --ink: #E6E9EF; --muted: #9AA3B2; --line: #2C3340;
+    --accent: #8EA0F2; --accent-ink: #10142A; --accent-soft: #232B4A; --danger: #F08377; --mark: #6B5A12;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161E; --card: #1A1F2A; --ink: #E6E9EF; --muted: #9AA3B2; --line: #2C3340;
+  --accent: #8EA0F2; --accent-ink: #10142A; --accent-soft: #232B4A; --danger: #F08377; --mark: #6B5A12;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.6;
+}
+h1 { font-size: 1.4rem; margin: 0 0 12px; }
+h2 { font-size: 1.05rem; margin: 0 0 8px; }
+p { margin: 0; }
+mark { background: var(--mark); color: inherit; border-radius: 3px; padding: 0 2px; }
+
+.app { min-height: 100vh; }
+.topbar {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--card); border-bottom: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+  padding-block: 10px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.topbar nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.brand { font-weight: 800; font-size: 1.1rem; color: var(--accent); background: none; border: none; cursor: pointer; padding: 4px 0; }
+.me { color: var(--muted); font-size: 0.9rem; padding: 0 6px; }
+
+main {
+  max-width: 960px; margin: 0 auto;
+  padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.card.narrow { max-width: 520px; margin: 0 auto; }
+
+button { font: inherit; cursor: pointer; border-radius: 8px; padding: 7px 14px; border: 1px solid transparent; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:disabled { opacity: 0.6; cursor: default; }
+.primary { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.nav { background: transparent; color: var(--ink); }
+.nav:hover, .ghost:hover { background: var(--accent-soft); }
+.danger { background: var(--danger); color: var(--card); font-weight: 600; }
+.danger-text { color: var(--danger); }
+.link { background: none; border: none; padding: 0; color: var(--accent); text-decoration: underline; }
+.wide { width: 100%; }
+.back { align-self: flex-start; background: none; border: none; padding: 0; color: var(--muted); }
+
+.list-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.list-head h1 { margin: 0; }
+.search { display: flex; gap: 6px; flex: 1 1 260px; max-width: 380px; }
+.search input { flex: 1; min-width: 0; }
+
+input, textarea, select {
+  font: inherit; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%;
+}
+select { width: auto; }
+.form { display: flex; flex-direction: column; gap: 6px; }
+.form label { font-weight: 600; font-size: 0.9rem; margin-top: 8px; }
+.form .actions { margin-top: 12px; }
+
+.posts { width: 100%; border-collapse: collapse; }
+.posts th, .posts td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+.posts th { font-size: 0.82rem; color: var(--muted); font-weight: 600; }
+.posts .num { width: 56px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.posts .date { white-space: nowrap; color: var(--muted); font-size: 0.88rem; }
+.title-link { background: none; border: none; padding: 0; color: var(--ink); text-align: left; font-weight: 600; }
+.title-link:hover { color: var(--accent); text-decoration: underline; }
+
+.meta { color: var(--muted); font-size: 0.9rem; }
+.content { padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); white-space: pre-wrap; min-height: 80px; }
+.files ul, .comments ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.files a { color: var(--accent); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.comments { margin-top: 8px; display: flex; flex-direction: column; gap: 10px; }
+.comments li { background: var(--bg); border-radius: 8px; padding: 10px 12px; }
+.comment-head { display: flex; gap: 10px; align-items: baseline; font-size: 0.9rem; margin-bottom: 2px; }
+.comment-head .link { margin-left: auto; font-size: 0.85rem; }
+.comment-form { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+
+.muted { color: var(--muted); }
+.hint { color: var(--muted); font-size: 0.85rem; }
+.error { color: var(--danger); font-size: 0.9rem; white-space: pre-wrap; word-break: break-word; }
+.empty { color: var(--muted); text-align: center; padding: 24px 0; }
+
+@media (max-width: 600px) {
+  .card { padding: 16px; }
+  .posts .date, .posts .num { display: none; }
+}
