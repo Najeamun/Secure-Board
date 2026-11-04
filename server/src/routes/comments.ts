@@ -1,33 +1,69 @@
+
 import { Router } from "express";
 import { pool } from "../db/pool.js";
 
-export const commentRouter = Router({mergeParams: true});
+export const commentRouter = Router({ mergeParams: true });
 
 commentRouter.get("/", async (req, res) => {
-  const {postId} = req.params as Record<string, string>;
-  const [rows] = await pool.query(
+  const { postId } = req.params as Record<string, string>;
+  const postIdNum = Number(postId);
+
+  if (!Number.isInteger(postIdNum) || postIdNum <= 0) {
+    return res.status(400).json({ message: "Invalid postId format" });
+  }
+
+  const [rows] = await pool.execute(
     `SELECT c.id, c.user_id, c.content, c.created_at, u.name AS authorName
-     FROM comments c JOIN users u ON c.user_id=u.id
-     WHERE c.post_id=${postId}
-     ORDER BY c.id`
+     FROM comments c JOIN users u ON c.user_id = u.id
+     WHERE c.post_id = ?
+     ORDER BY c.id`,
+    [postIdNum]
   );
+
   res.json(rows);
 });
 
 commentRouter.post("/", async (req, res) => {
-  const {postId} = req.params as Record<string, string>;
+  const { postId } = req.params as Record<string, string>;
+  const postIdNum = Number(postId);
   const user = req.session.user as any;
-  const {content} = req.body;
+  const { content } = req.body;
+  const userId = user?.id ?? 1;
 
-  await pool.query(
-    `INSERT INTO comments(post_id, user_id, content)
-     VALUES (${postId}, ${user?.id ?? 1}, '${content}')`
+  if (!Number.isInteger(postIdNum) || postIdNum <= 0) {
+    return res.status(400).json({ message: "Invalid postId format" });
+  }
+
+  if (typeof content !== "string") {
+    return res.status(400).json({ message: "Content must be a string" });
+  }
+
+  if (content.length < 1 || content.length > 500) {
+    return res.status(400).json({
+      message: "Comment length must be between 1 and 500"
+    });
+  }
+
+  await pool.execute(
+    `INSERT INTO comments(post_id, user_id, content) VALUES (?, ?, ?)`,
+    [postIdNum, userId, content]
   );
-  res.json({message: "created"});
+
+  res.json({ message: "created" });
 });
 
 commentRouter.delete("/:commentId", async (req, res) => {
-  const {commentId} = req.params as Record<string, string>;
-  await pool.query(`DELETE FROM comments WHERE id=${commentId}`);
-  res.json({message: "deleted"});
+  const { commentId } = req.params as Record<string, string>;
+  const commentIdNum = Number(commentId);
+
+  if (!Number.isInteger(commentIdNum) || commentIdNum <= 0) {
+    return res.status(400).json({ message: "Invalid commentId format" });
+  }
+
+  await pool.execute(
+    `DELETE FROM comments WHERE id = ?`,
+    [commentIdNum]
+  );
+
+  res.json({ message: "deleted" });
 });
