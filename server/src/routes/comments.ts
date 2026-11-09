@@ -18,7 +18,9 @@ commentRouter.post("/", async (req, res) => {
   const {postId} = req.params as Record<string, string>;
   const user = req.session.user as any;
   const {content} = req.body;
-
+  if (typeof content !== "string") {
+    return res.status(400).json({message: "content must be a string"});
+  }
   await pool.query(
     `INSERT INTO comments(post_id, user_id, content)
      VALUES (${postId}, ${user?.id ?? 1}, '${content}')`

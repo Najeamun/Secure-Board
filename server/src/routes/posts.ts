@@ -40,7 +40,9 @@ postRouter.get("/:id", async (req, res) => {
 postRouter.post("/", async (req, res) => {
   const user = req.session.user as any;
   const {title, content, userId} = req.body;
-
+  if (typeof title !== "string" || typeof content !== "string") {
+    return res.status(400).json({message: "title and content must be strings"});
+  }
   const [result]: any = await pool.query(
     `INSERT INTO posts(user_id, title, content)
      VALUES (${userId ?? user?.id ?? 1}, '${title}', '${content}')`
@@ -50,6 +52,9 @@ postRouter.post("/", async (req, res) => {
 
 postRouter.put("/:id", async (req, res) => {
   const {title, content} = req.body;
+  if (typeof title !== "string" || typeof content !== "string") {
+    return res.status(400).json({message: "title and content must be strings"});
+  }
   await pool.query(
     `UPDATE posts SET title='${title}', content='${content}' WHERE id=${req.params.id}`
   );
