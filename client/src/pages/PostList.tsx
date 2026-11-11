@@ -5,10 +5,14 @@ import type { Post } from "../types";
 import type { Go } from "../App";
 import { Fragment } from "react";
 
-function highlight(text: string, keyword: string): string {
+function highlight(text: string, keyword: string){
   if (!keyword) return text;
-  return text.split(keyword).join(`<mark>${keyword}</mark>`);
-  
+  return text.split(keyword).map((part, i) => (
+    <Fragment key={i}>
+      {i > 0 && <mark>{keyword}</mark>}
+      {part}
+    </Fragment>
+  ));
 }
 
 export default function PostList({go}: {go: Go}) {
@@ -55,9 +59,7 @@ export default function PostList({go}: {go: Go}) {
               <td className="num">{p.id}</td>
               <td>
                 <button className="title-link" onClick={() => go({name: "detail", id: p.id})}>
-                  {searched
-                    ? <span dangerouslySetInnerHTML={{__html: highlight(p.title, searched)}} />
-                    : p.title}
+                  {highlight(p.title, searched)}
                 </button>
               </td>
               <td>{p.authorName}</td>
