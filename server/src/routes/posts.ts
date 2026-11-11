@@ -1,8 +1,15 @@
-
 import { Router } from "express";
 import { pool } from "../db/pool.js";
+import type { Request, Response, NextFunction } from "express"
 
 export const postRouter = Router();
+
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (!req.session.user) {
+    return res.status(401).json({ message: "로그인이 필요합니다." });
+  }
+  next();
+}
 
 // 게시글 검색
 postRouter.get("/", async (req, res) => {
@@ -59,7 +66,7 @@ postRouter.get("/:id", async (req, res) => {
 });
 
 // 게시글 작성
-postRouter.post("/", async (req, res) => {
+postRouter.post("/", requireAuth, async (req, res) => {
   const user = req.session.user as any;
   const { title, content, userId } = req.body;
   const targetUserId = userId ?? user?.id ?? 1;
@@ -91,7 +98,7 @@ postRouter.post("/", async (req, res) => {
 });
 
 // 게시글 수정
-postRouter.put("/:id", async (req, res) => {
+postRouter.put("/:id", requireAuth, async (req, res) => {
   const idNum = Number(req.params.id);
   const { title, content } = req.body;
 

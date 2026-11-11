@@ -3,8 +3,17 @@ import multer from "multer";
 import path from "node:path";
 import fs from "node:fs";
 import { pool } from "../db/pool.js";
+import type { Request, Response, NextFunction } from "express";
+
 
 export const fileRouter = Router();
+
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (!req.session.user) {
+    return res.status(401).json({ message: "로그인이 필요합니다." });
+  }
+  next();
+}
 
 const uploadDir = path.join(process.cwd(), "uploads");
 fs.mkdirSync(uploadDir, {recursive:true});
@@ -23,7 +32,7 @@ const upload = multer({
   })
 });
 
-fileRouter.post("/upload", upload.single("file"), async (req, res) => {
+fileRouter.post("/upload", requireAuth, upload.single("file"), async (req, res) => {
   const user = req.session.user as any;
   const file = req.file;
   if (!file) return res.status(400).json({message: "no file"});

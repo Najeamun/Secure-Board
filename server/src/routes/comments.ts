@@ -1,9 +1,16 @@
 
 import { Router } from "express";
 import { pool } from "../db/pool.js";
+import type { Request, Response, NextFunction } from "express";
 
 export const commentRouter = Router({ mergeParams: true });
 
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (!req.session.user) {
+    return res.status(401).json({ message: "로그인이 필요합니다." });
+  }
+  next();
+}
 commentRouter.get("/", async (req, res) => {
   const { postId } = req.params as Record<string, string>;
   const postIdNum = Number(postId);
@@ -23,7 +30,7 @@ commentRouter.get("/", async (req, res) => {
   res.json(rows);
 });
 
-commentRouter.post("/", async (req, res) => {
+commentRouter.post("/", requireAuth, async (req, res) => {
   const { postId } = req.params as Record<string, string>;
   const postIdNum = Number(postId);
   const user = req.session.user as any;
@@ -52,7 +59,7 @@ commentRouter.post("/", async (req, res) => {
   res.json({ message: "created" });
 });
 
-commentRouter.delete("/:commentId", async (req, res) => {
+commentRouter.delete("/:commentId", requireAuth, async (req, res) => {
   const { commentId } = req.params as Record<string, string>;
   const commentIdNum = Number(commentId);
 
