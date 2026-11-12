@@ -37,10 +37,12 @@ fileRouter.post("/upload", requireAuth, upload.single("file"), async (req, res) 
   const file = req.file;
   if (!file) return res.status(400).json({message: "no file"});
 
-  await pool.query(
-    `INSERT INTO attachments(post_id, user_id, original_name, stored_name, mime_type, size)
-     VALUES (${req.body.postId}, ${user?.id ?? 1}, '${file.originalname}', '${file.filename}', '${file.mimetype}', ${file.size})`
-  );
+  await pool.execute(
+  `INSERT INTO attachments(post_id, user_id, original_name, stored_name, mime_type, size)
+   VALUES (?, ?, ?, ?, ?, ?)`,
+  [req.body.postId, user?.id ?? 1, file.originalname, file.filename, file.mimetype, file.size]
+);
+
   res.json({
     message: "uploaded",
     file

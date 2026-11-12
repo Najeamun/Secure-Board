@@ -14,6 +14,6 @@ adminRouter.get("/users", async (req, res) => {
 
 adminRouter.post("/users/:id/role", async (req, res) => {
   const {role} = req.body;
-  await pool.query(`UPDATE users SET role='${role}' WHERE id=${req.params.id}`);
+  await pool.execute(`UPDATE users SET role = ? WHERE id = ?`, [role, req.params.id]);
   res.json({message:"role changed"});
 });
