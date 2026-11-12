@@ -1,18 +1,20 @@
 import { Router } from "express";
-import crypto from "node:crypto";
+import bcrypt from "bcrypt";
 import { pool } from "../db/pool.js";
 
 export const authRouter = Router();
 
 const LOCK_MS = 5 * 60 * 1000;
-const loginState = new Map<string, {failures: number; lockedUntil: number}>(); // 계정별 실패 상태
+const loginState = new Map<string, {failures: number; lockedUntil: number}>(); 
 
 authRouter.post("/register", async (req, res) => {
   const {email, password, name} = req.body;
-  const passwordHash = crypto.createHash("md5").update(password).digest("hex");
+
+  const passwordHash = await bcrypt.hash(password, 12);
   
-  await pool.query(
-    `INSERT INTO users(email, password_hash, name, role) VALUES ('${email}', '${passwordHash}', '${name}', 'USER')`
+  await pool.execute(
+    `INSERT INTO users(email, password_hash, name, role) VALUES (?, ?, ?, 'USER')`,
+    [email, passwordHash, name]
   );
 
   res.json({message: "registered"});
@@ -20,15 +22,6 @@ authRouter.post("/register", async (req, res) => {
 
 authRouter.post("/login", async (req, res) => {
   const {email, password} = req.body;
-  const passwordHash = crypto.createHash("md5").update(password).digest("hex");
-  
-  const [rows]: any = await pool.execute(
-    `SELECT id, email, name, role FROM users
-     WHERE email=? AND password_hash=?`,
-    [email, passwordHash]
-  );
-  
-  const loginError = "이메일 또는 비밀번호가 올바르지 않습니다";
   
   const key = String(email).trim().toLowerCase();
   const s = loginState.get(key) ?? { failures: 0, lockedUntil: 0 };
@@ -38,8 +31,18 @@ authRouter.post("/login", async (req, res) => {
     const min = Math.floor(sec / 60);
     return res.status(429).json({ message: `로그인 시도가 많습니다. ${min}분 ${sec % 60}초 후 다시 시도해 주세요.`, retryAfter: sec });
   }
+
+  const [rows]: any = await pool.execute(
+    `SELECT id, email, password_hash, name, role FROM users WHERE email = ?`,
+    [email]
+  );
   
-  if (rows.length === 0) {
+  const loginError = "이메일 또는 비밀번호가 올바르지 않습니다";
+  const user = rows[0];
+
+  const isMatch = user && password ? await bcrypt.compare(password, user.password_hash) : false;
+  
+  if (!isMatch) {
     s.failures++;
     const remaining = 5 - s.failures;
 
@@ -54,10 +57,19 @@ authRouter.post("/login", async (req, res) => {
       remaining
     });
   }
+
   loginState.delete(key);
-  req.session.user = rows[0];
-  res.cookie("lastLoginUser", JSON.stringify(rows[0]), {httpOnly: false});
-  res.json(rows[0]);
+
+  const userInfo = {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+  };
+
+  req.session.user = userInfo;
+  res.cookie("lastLoginUser", JSON.stringify(userInfo), {httpOnly: false});
+  res.json(userInfo);
 });
 
 authRouter.get("/me", (req, res) => {
