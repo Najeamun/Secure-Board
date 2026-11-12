@@ -10,6 +10,10 @@ const loginState = new Map<string, {failures: number; lockedUntil: number}>();
 authRouter.post("/register", async (req, res) => {
   const {email, password, name} = req.body;
 
+  if (typeof password !== "string" || password.length < 8) {
+  return res.status(400).json({ message: "비밀번호는 8자 이상이어야 합니다." });
+}
+
   const passwordHash = await bcrypt.hash(password, 12);
   
   await pool.execute(
