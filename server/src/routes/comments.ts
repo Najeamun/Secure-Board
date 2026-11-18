@@ -65,13 +65,17 @@ commentRouter.delete("/:commentId", requireAuth, async (req, res) => {
   const postIdNum = Number(postId);
   const commentIdNum = Number(commentId);
 
-  const [rows]: any = await pool.execute
-  ("SELECT user_id FROM comments WHERE id=? AND post_id=?", [commentIdNum, postIdNum]);
+  
 
   if (!Number.isInteger(commentIdNum) || commentIdNum <= 0) {
     return res.status(400).json({ message: "Invalid commentId format" });
   }
+
+  const [rows]: any = await pool.execute
+  ("SELECT user_id FROM comments WHERE id=? AND post_id=?", [commentIdNum, postIdNum]);
+  
   if (!rows.length) return res.sendStatus(404).json({ message: "not found" });
+  
   if (rows[0].user_id !== actor.id && actor.role !== "ADMIN")
     return res.sendStatus(403).json({ message: "권한이 없습니다." });;
 

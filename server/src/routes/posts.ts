@@ -102,12 +102,12 @@ postRouter.put("/:id", requireAuth, async (req, res) => {
   const idNum = Number(req.params.id);
   const { title, content } = req.body;
 
-  const [rows]: any = await pool.execute
-  ("SELECT user_id FROM posts WHERE id=?", [idNum]);
-
   if (!Number.isInteger(idNum) || idNum <= 0) {
     return res.status(400).json({ message: "Invalid ID format" });
   }
+  
+  const [rows]: any = await pool.execute
+  ("SELECT user_id FROM posts WHERE id=?", [idNum]);
 
   if (typeof title !== "string" || typeof content !== "string") {
     return res.status(400).json({
@@ -125,7 +125,7 @@ postRouter.put("/:id", requireAuth, async (req, res) => {
   }
   if (rows.length === 0) return res.status(404).json({ message: "not found" });
   if (rows[0].user_id !== actor.id && actor.role !== "ADMIN") {
-    return res.status(403).json({ message: "권한이 없습니다." });;
+    return res.status(403).json({ message: "권한이 없습니다." });
   }
 
   await pool.execute(
