@@ -99,8 +99,12 @@ postRouter.post("/", requireAuth, async (req, res) => {
 
 // 게시글 수정
 postRouter.put("/:id", requireAuth, async (req, res) => {
+  const actor = req.session.user!;
   const idNum = Number(req.params.id);
   const { title, content } = req.body;
+
+  const [rows]: any = await pool.execute
+  ("SELECT user_id FROM posts WHERE id=?", [idNum]);
 
   if (!Number.isInteger(idNum) || idNum <= 0) {
     return res.status(400).json({ message: "Invalid ID format" });
@@ -120,6 +124,10 @@ postRouter.put("/:id", requireAuth, async (req, res) => {
   ) {
     return res.status(400).json({ message: "Invalid input length" });
   }
+  if (rows.length === 0) return res.status(404).json({ message: "not found" });
+  if (rows[0].user_id !== actor.id && actor.role !== "ADMIN") {
+    return res.status(403).json({ message: "권한이 없습니다." });;
+  }
 
   await pool.execute(
     `UPDATE posts SET title = ?, content = ? WHERE id = ?`,
@@ -130,13 +138,19 @@ postRouter.put("/:id", requireAuth, async (req, res) => {
 });
 
 // 게시글 삭제
-postRouter.delete("/:id", async (req, res) => {
+postRouter.delete("/:id", requireAuth, async (req, res) => {
+  const actor = req.session.user!;
   const idNum = Number(req.params.id);
-
+  const [rows]: any = await pool.execute
+  ("SELECT user_id FROM posts WHERE id=?", [idNum]);
+  
   if (!Number.isInteger(idNum) || idNum <= 0) {
     return res.status(400).json({ message: "Invalid ID format" });
   }
-
+  if (rows.length === 0) return res.status(404).json({ message: "not found" });
+  if(rows[0].user_id !== actor.id && actor.role !== "ADMIN") {
+    return res.status(403).json({ message: "권한이 없습니다." });
+  }
   await pool.execute(
     `DELETE FROM posts WHERE id = ?`,
     [idNum]
