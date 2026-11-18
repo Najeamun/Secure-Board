@@ -14,7 +14,7 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 adminRouter.use(requireAdmin);
 
 adminRouter.get("/users", async (req, res) => {
-  const [rows] = await pool.query("SELECT id,email,name,role,password_hash FROM users");
+  const [rows] = await pool.query("SELECT id, email, name, role FROM users");
   res.json(rows);
 });
 
