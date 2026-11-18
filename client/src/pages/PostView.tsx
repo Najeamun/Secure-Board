@@ -5,7 +5,7 @@ import type { Comment, PostDetail, User } from "../types";
 import type { Go } from "../App";
 import DOMPurify from "dompurify";
 
-export default function PostView({id, me, go}: {id: number; me: User | null; go: Go}) {
+export default function PostView({ id, me, go }: { id: number; me: User | null; go: Go }) {
   const [post, setPost] = useState<PostDetail | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState("");
@@ -25,13 +25,13 @@ export default function PostView({id, me, go}: {id: number; me: User | null; go:
 
   async function removePost() {
     await api(`/api/posts/${id}`, "DELETE");
-    go({name: "list"});
+    go({ name: "list" });
   }
 
   async function addComment(e: FormEvent) {
     e.preventDefault();
     if (!text.trim()) return;
-    await api(`/api/posts/${id}/comments`, "POST", {content: text});
+    await api(`/api/posts/${id}/comments`, "POST", { content: text });
     setText("");
     load();
   }
@@ -45,7 +45,7 @@ export default function PostView({id, me, go}: {id: number; me: User | null; go:
   if (!post) return <section className="card"><p className="muted">불러오는 중…</p></section>;
 
   const canEdit = me !== null && (me.id === post.user_id || me.role === "ADMIN");
-  
+
   const cleanContent = DOMPurify.sanitize(
     post.content,
     {
@@ -53,14 +53,14 @@ export default function PostView({id, me, go}: {id: number; me: User | null; go:
       ALLOWED_ATTR: []
     }
   );
-  
+
   return (
     <article className="card">
-      <button className="back" onClick={() => go({name: "list"})}>← 목록으로</button>
+      <button className="back" onClick={() => go({ name: "list" })}>← 목록으로</button>
       <h1>{post.title}</h1>
       <p className="meta">{post.authorName} · {formatDate(post.created_at)}</p>
 
-      <div className="content" dangerouslySetInnerHTML={{__html: cleanContent}}/>
+      <div className="content" dangerouslySetInnerHTML={{ __html: cleanContent }} />
 
       {post.attachments.length > 0 && (
         <div className="files">
@@ -78,7 +78,7 @@ export default function PostView({id, me, go}: {id: number; me: User | null; go:
 
       {canEdit && (
         <div className="actions">
-          <button className="ghost" onClick={() => go({name: "edit", id})}>수정</button>
+          <button className="ghost" onClick={() => go({ name: "edit", id })}>수정</button>
           {confirming ? (
             <>
               <button className="danger" onClick={removePost}>정말 삭제</button>
@@ -98,7 +98,7 @@ export default function PostView({id, me, go}: {id: number; me: User | null; go:
               <div className="comment-head">
                 <b>{c.authorName}</b>
                 <span className="muted">{formatDate(c.created_at)}</span>
-                {me?.id === c.user_id && (
+                {(me?.id === c.user_id || me?.role === "ADMIN") && (
                   <button className="link danger-text" onClick={() => removeComment(c.id)}>삭제</button>
                 )}
               </div>

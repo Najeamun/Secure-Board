@@ -68,7 +68,7 @@ postRouter.get("/:id", async (req, res) => {
 // 게시글 작성
 postRouter.post("/", requireAuth, async (req, res) => {
   const user = req.session.user as any;
-  const { title, content} = req.body;
+  const {title, content} = req.body;
 
   if (typeof title !== "string" || typeof content !== "string") {
     return res.status(400).json({

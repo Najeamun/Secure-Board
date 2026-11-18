@@ -58,7 +58,7 @@ VALUES
 (3,'과제 제출 질문','보고서는 PDF로 내면 되나요?'),
 (1,'[공지] 게시판 이용 안내','서로 존중하는 게시판을 만들어 주세요.');
 
-INSERT INTO comments(post_id,user_id,content)
+INSERT INTO comments(post_id,useeer_id,content)
 VALUES
 (4,1,'네, PDF로 제출하면 됩니다.'),
 (1,3,'반갑습니다!'),

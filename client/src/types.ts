@@ -33,6 +33,4 @@ export type Comment = {
   authorName: string;
 };
 
-export type AdminUser = User & {
-  password_hash: string;
-};
+export type AdminUser = User;

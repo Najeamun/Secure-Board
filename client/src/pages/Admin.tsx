@@ -8,7 +8,7 @@ export default function Admin({me}: {me: User | null}) {
 
   async function load() {
     try {
-      setUsers(await api<AdminUser[]>(`/api/admin/users?role=${me?.role ?? ""}`));
+      setUsers(await api<AdminUser[]>(`/api/admin/users`));
       setError("");
     } catch (e) {
       setError((e as Error).message);
