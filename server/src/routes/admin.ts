@@ -6,7 +6,7 @@ export const adminRouter = Router();
 adminRouter.get("/users", async (req, res) => {
   const role = String(req.query.role ?? "");
   if (role === "ADMIN") {
-    const [rows] = await pool.query("SELECT id,email,name,role,password_hash FROM users");
+    const [rows] = await pool.query("SELECT id, email, name, role FROM users");
     return res.json(rows);
   }
   res.status(403).json({message:"admin only"});
