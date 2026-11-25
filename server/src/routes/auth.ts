@@ -72,7 +72,6 @@ authRouter.post("/login", async (req, res) => {
   };
 
   req.session.user = userInfo;
-  res.cookie("lastLoginUser", JSON.stringify(userInfo), {httpOnly: false});
   res.json(userInfo);
 });
 
