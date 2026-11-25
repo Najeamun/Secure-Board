@@ -2,6 +2,7 @@ import express from "express";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import "dotenv/config";
+import crypto from "node:crypto";
 
 import { authRouter } from "./routes/auth.js";
 import { postRouter } from "./routes/posts.js";
@@ -36,6 +37,46 @@ app.use(session({
 
 app.get("/api/health", (_req, res) => {
   res.json({ok: true, env: process.env.NODE_ENV, node: process.version});
+});
+
+const CSRF_EXEMPT_PATHS = new Set([
+  "/auth/login",
+  "/auth/register",
+  "/auth/csrf",
+]);
+const CSRF_METHODS = new Set(["POST", "PUT", "DELETE"]);
+
+app.use("/api", (req, res, next) => {
+  if (!CSRF_METHODS.has(req.method.toUpperCase())) {
+    return next();
+  }
+
+  if (CSRF_EXEMPT_PATHS.has(req.path)) {
+    return next();
+  }
+
+  const headerToken = req.get("X-CSRF-Token");
+  const sessionToken = req.session.csrfToken;
+
+  if (
+    typeof headerToken !== "string" ||
+    typeof sessionToken !== "string" ||
+    headerToken.length === 0 ||
+    headerToken.length !== sessionToken.length
+  ) {
+    return res.status(403).json({ message: "Invalid or missing CSRF token" });
+  }
+
+  const isValid = crypto.timingSafeEqual(
+    Buffer.from(headerToken, "utf8"),
+    Buffer.from(sessionToken, "utf8")
+  );
+
+  if (!isValid) {
+    return res.status(403).json({ message: "Invalid or missing CSRF token" });
+  }
+
+  next();
 });
 
 app.use("/api/auth", authRouter);

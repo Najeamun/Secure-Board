@@ -1,6 +1,7 @@
 import { Router } from "express";
 import bcrypt from "bcrypt";
 import { pool } from "../db/pool.js";
+import crypto from "node:crypto";
 
 export const authRouter = Router();
 
@@ -84,4 +85,11 @@ authRouter.get("/me", (req, res) => {
 
 authRouter.post("/logout", (req, res) => {
   req.session.destroy(() => res.json({message: "logout"}));
+});
+
+authRouter.get("/csrf", (req, res) => {
+  if (!req.session.csrfToken) {
+    req.session.csrfToken = crypto.randomBytes(32).toString("hex");
+  }
+  res.json({ csrfToken: req.session.csrfToken });
 });
