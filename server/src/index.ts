@@ -16,7 +16,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 
 app.use((req, _res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`, req.body ?? "");
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
 
@@ -31,7 +31,7 @@ app.use(session({
 }));
 
 app.get("/api/health", (_req, res) => {
-  res.json({ok: true, env: process.env.NODE_ENV, node: process.version});
+  res.json({ok: true});
 });
 
 app.use("/api/auth", authRouter);
