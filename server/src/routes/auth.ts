@@ -24,7 +24,7 @@ authRouter.post("/register", async (req, res) => {
   res.json({message: "registered"});
 });
 
-authRouter.post("/login", async (req, res) => {
+authRouter.post("/login", async (req, res, next) => {
   const {email, password} = req.body;
   
   const key = String(email).trim().toLowerCase();
@@ -71,9 +71,16 @@ authRouter.post("/login", async (req, res) => {
     role: user.role,
   };
 
-  req.session.user = userInfo;
-  res.cookie("lastLoginUser", JSON.stringify(userInfo), {httpOnly: false});
-  res.json(userInfo);
+  req.session.regenerate((err) => {
+    if (err) return next(err);
+      req.session.user = userInfo;
+      req.session.save((err) => {
+        if (err) return next(err);
+        res.cookie("lastLoginUser", JSON.stringify(userInfo), {httpOnly: false});
+        res.json(userInfo);
+      });
+  });
+  
 });
 
 authRouter.get("/me", (req, res) => {
@@ -83,6 +90,10 @@ authRouter.get("/me", (req, res) => {
   res.json(req.session.user);
 });
 
-authRouter.post("/logout", (req, res) => {
-  req.session.destroy(() => res.json({message: "logout"}));
+authRouter.post("/logout", (req, res, next) => {
+  req.session.destroy(err => {
+    if (err) return next(err);
+      res.clearCookie("connect.sid", {path: "/"});
+    res.json({ message: "logout" });
+  });
 });
