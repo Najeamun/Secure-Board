@@ -20,14 +20,18 @@ app.use((req, _res, next) => {
   next();
 });
 
+const isProduction = process.env.NODE_ENV === "production";
+
 app.use(session({
+  name: "sid", // 필요 시 기존 쿠키 이름과 맞추기
   secret: process.env.SESSION_SECRET ?? "class-secret-2026",
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
-    httpOnly: false,
-    secure: false
-  }
+    httpOnly: true,
+    sameSite: "lax",
+    secure: isProduction,
+  },
 }));
 
 app.get("/api/health", (_req, res) => {
