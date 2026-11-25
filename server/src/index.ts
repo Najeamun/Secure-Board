@@ -86,12 +86,31 @@ app.use("/api/admin", adminRouter);
 app.use("/api/files", fileRouter);
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error(err);
-  res.status(500).json({
-    message: err.message,
-    stack: err.stack,
-    detail: err
+  console.error("[ERROR]", {
+    message: err?.message,
+    code: err?.code,
+    stack: err?.stack,
   });
+
+  const statusCode =
+    typeof err?.status === "number" && err.status >= 400 && err.status < 600
+      ? err.status
+      : typeof err?.statusCode === "number" && err.statusCode >= 400 && err.statusCode < 600
+      ? err.statusCode
+      : 500;
+
+  const clientMessage =
+    statusCode === 400
+      ? "잘못된 요청입니다."
+      : statusCode === 401
+      ? "인증이 필요합니다."
+      : statusCode === 403
+      ? "접근 권한이 없습니다."
+      : statusCode === 404
+      ? "요청한 리소스를 찾을 수 없습니다."
+      : "서버 오류가 발생했습니다.";
+
+  res.status(statusCode).json({ message: clientMessage });
 });
 
 app.listen(Number(process.env.PORT ?? 3001), () => {
